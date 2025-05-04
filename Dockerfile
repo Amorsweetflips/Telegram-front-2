@@ -1,22 +1,19 @@
-# 1) Build stage
+# 1) Build your React app
 FROM node:20-alpine AS builder
 WORKDIR /app
-
-# install git for any git-based deps
 RUN apk add --no-cache git openssh-client
 
-# copy manifests, CRACO config and prod env
+# Copy only what’s needed for install
 COPY package.json craco.config.js .env.production ./
 RUN npm install
 
-# copy source and build
+# Copy source & build
 COPY public ./public
 COPY src    ./src
 RUN npm run build
 
-# 2) Serve with nginx
+# 2) Serve the build with Nginx
 FROM nginx:stable-alpine
 COPY --from=builder /app/build /usr/share/nginx/html
-
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
