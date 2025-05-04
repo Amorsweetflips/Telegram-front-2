@@ -1,17 +1,17 @@
 FROM node:20-alpine
 WORKDIR /app
 
-# Install git so npm can fetch git-based deps
+# grab git so your git-based deps install
 RUN apk add --no-cache git openssh-client
 
-# Copy manifest & install
-COPY package.json ./
+# copy your manifests + CRACO config
+COPY package.json craco.config.js ./
 RUN npm install
 
-# Copy app code
+# now grab the rest of your app
 COPY public ./public
 COPY src    ./src
 
-# Build & start
+# build & serve
 RUN npm run build
 CMD ["npm","run","start"]
