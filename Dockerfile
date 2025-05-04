@@ -1,7 +1,10 @@
 FROM node:20-alpine
 WORKDIR /app
 
-# Copy manifest
+# Install git so npm can fetch git-based deps
+RUN apk add --no-cache git openssh-client
+
+# Copy manifest & install
 COPY package.json ./
 RUN npm install
 
