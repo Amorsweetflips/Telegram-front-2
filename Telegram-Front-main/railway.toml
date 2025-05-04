@@ -1,0 +1,6 @@
+# Railway configuration for Sweetflips Frontend
+[build]
+  dockerfile = "Dockerfile"
+
+[deploy]
+  start = "npm install && npm run build && npm run start"
