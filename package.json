@@ -10,7 +10,7 @@
     "telegram-tt": "git+https://github.com/Ajaxy/telegram-tt.git#master"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "craco start",
     "build": "react-scripts build"
   }
 }
