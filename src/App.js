@@ -2,25 +2,34 @@ import React, { useEffect, useState } from 'react';
 import api from './api';
 
 function App() {
-  const [payload, setPayload] = useState({ data: [] });
+  const [messages, setMessages] = useState(null);
 
   useEffect(() => {
-    api.getData().then(setPayload).catch(console.error);
+    api.getData()
+       .then(setMessages)
+       .catch(err => {
+         console.error(err);
+         setMessages([]); // avoid infinite loading
+       });
   }, []);
+
+  if (messages === null) {
+    return <div>Loading…</div>;
+  }
 
   return (
     <div className="App">
       <h1>Messages</h1>
-      {payload.data.length ? (
+      {messages.length > 0 ? (
         <ul>
-          {payload.data.map(msg => (
+          {messages.map(msg => (
             <li key={msg.id}>
               <strong>{msg.sender_username}:</strong> {msg.message}
             </li>
           ))}
         </ul>
       ) : (
-        'Loading…'
+        <div>No messages yet.</div>
       )}
     </div>
   );
