@@ -1,19 +1,13 @@
-import axios from 'axios';
-const API_URL = process.env.REACT_APP_BACKEND_URL;
+// src/api.js
 
-export function fetchMessages() {
-  return axios.get(`${API_URL}/messages`).then(res => res.data);
+// Example named export
+export async function getData() {
+  const res = await fetch(process.env.REACT_APP_API_URL + '/data');
+  if (!res.ok) throw new Error(res.statusText);
+  return res.json();
 }
 
-export function sendMessage(chatId, message) {
-  return axios.post(`${API_URL}/send`, {
-    chat_name: chatId,
-    sender_username: '@Amor',
-    message
-  });
-}
+// Bundle named exports into a default export
+const api = { getData };
 
-export function loginWithTelegram() {
-  window.TelegramLoginWidget && TelegramLoginWidget.login();
-}
-// Axios backend connector
+export default api;
