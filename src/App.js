@@ -1,21 +1,22 @@
 import React, { useEffect, useState } from 'react';
-import { TelegramUI } from 'telegram-tt';
-import { fetchMessages, sendMessage, loginWithTelegram } from '../api';
+import api from './api';  // ← changed from '../api'
 
-export default function App() {
-  const [messages, setMessages] = useState([]);
+function App() {
+  const [data, setData] = useState(null);
 
   useEffect(() => {
-    fetchMessages().then(setMessages);
+    api.getData().then(setData).catch(console.error);
   }, []);
 
   return (
-    <TelegramUI
-      messages={messages}
-      onSend={sendMessage}
-      onLogin={loginWithTelegram}
-      style={{ height: '100vh' }}
-    />
+    <div className="App">
+      {data ? (
+        <pre>{JSON.stringify(data, null, 2)}</pre>
+      ) : (
+        'Loading…'
+      )}
+    </div>
   );
 }
-// Telegram-tt UI integration
+
+export default App;
