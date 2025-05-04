@@ -8,14 +8,12 @@ function App() {
     api.getData().then(setPayload).catch(console.error);
   }, []);
 
-  const messages = payload.data;
-
   return (
     <div className="App">
       <h1>Messages</h1>
-      {messages.length ? (
+      {payload.data.length ? (
         <ul>
-          {messages.map((msg) => (
+          {payload.data.map(msg => (
             <li key={msg.id}>
               <strong>{msg.sender_username}:</strong> {msg.message}
             </li>
