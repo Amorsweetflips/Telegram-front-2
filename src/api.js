@@ -1,13 +1,12 @@
 // src/api.js
+const baseUrl = process.env.REACT_APP_API_URL.replace(/\/+$/, '');
 
-// Example named export
 export async function getData() {
-  const res = await fetch(process.env.REACT_APP_API_URL + '/data');
+  const res = await fetch(`${baseUrl}/data`);
   if (!res.ok) throw new Error(res.statusText);
-  return res.json();
+  const json = await res.json();
+  // unwrap the `data` key
+  return json.data;
 }
 
-// Bundle named exports into a default export
-const api = { getData };
-
-export default api;
+export default { getData };
