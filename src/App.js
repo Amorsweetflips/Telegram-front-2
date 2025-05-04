@@ -1,46 +1,41 @@
 import React, { useEffect, useState } from 'react';
 import api from './api';
+import ChatWindow from './components/ChatWindow';
+import ChatMessage from './components/ChatMessage';
 
 function App() {
-  // `messages === null` means “still loading”
-  // once loaded it becomes an array (possibly empty)
   const [messages, setMessages] = useState(null);
 
   useEffect(() => {
     api.getData()
-      .then(data => setMessages(data))
+      .then(setMessages)
       .catch(err => {
         console.error(err);
-        setMessages([]);  // stop loading even on error
+        setMessages([]);
       });
   }, []);
 
-  // show only Loading… until messages is not null
   if (messages === null) {
-    return (
-      <div className="App">
-        <h1>Messages</h1>
-        <div>Loading…</div>
-      </div>
-    );
+    return <div style={{ textAlign:'center', padding:'2rem' }}>Loading…</div>;
   }
 
-  // once messages is an array, render it (or “No messages”)
   return (
-    <div className="App">
-      <h1>Messages</h1>
+    <ChatWindow>
       {messages.length > 0 ? (
-        <ul>
-          {messages.map(msg => (
-            <li key={msg.id}>
-              <strong>@{msg.sender_username}:</strong> {msg.message}
-            </li>
-          ))}
-        </ul>
+        messages.map((msg, i) => (
+          <ChatMessage
+            key={msg.id || i}
+            author={msg.sender_username}
+            text={msg.message}
+            fromMe={msg.sender_username === '<your-username>'} // or however you detect “me”
+          />
+        ))
       ) : (
-        <div>No messages yet.</div>
+        <div style={{ textAlign:'center', marginTop:'2rem' }}>
+          No messages yet.
+        </div>
       )}
-    </div>
+    </ChatWindow>
   );
 }
 
