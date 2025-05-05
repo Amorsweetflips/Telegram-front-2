@@ -1,57 +1,50 @@
-<<<<<<< HEAD
 import axios from 'axios';
-const api = axios.create({ baseURL: process.env.REACT_APP_API_URL });
-api.interceptors.request.use(cfg => {
-  const token = localStorage.getItem('token');
-  if (token) cfg.headers.Authorization = `Bearer ${token}`;
-  return cfg;
+
+const api = axios.create({
+  baseURL: process.env.REACT_APP_API_URL
 });
-export default api;
-=======
-// src/api.js
-import axios from 'axios';
 
-const BASE = process.env.REACT_APP_API_URL.replace(/\/+$/, '');
+// request interceptor (optional)
+api.interceptors.request.use(cfg => {
+  // e.g. attach auth token
+  // cfg.headers.Authorization = `Bearer ${localStorage.getItem('token')}`;
+  return cfg;
+}, err => Promise.reject(err));
 
-export async function signIn(username) {
-  const { data } = await axios.post(`${BASE}/auth/token`, { username });
-  return data.access_token;
-}
+// response interceptor (optional)
+api.interceptors.response.use(res => res, err => Promise.reject(err));
 
-export async function getOpenChats(token) {
-  const { data } = await axios.get(`${BASE}/chats/open`, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
-  return data.chats;
-}
-
-export async function getChatMessages(chatName, token) {
-  const { data } = await axios.get(`${BASE}/chats/${chatName}/messages`, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
-  return data.messages;
-}
-
-export async function sendReply(chatName, message, token) {
-  const { data } = await axios.post(
-    `${BASE}/send`,
-    { chat_name: chatName, message },
-    { headers: { Authorization: `Bearer ${token}` } }
-  );
-  return data.inserted;
-}
-
-export async function suggestReplies(chatName, lastMessage, token) {
-  const { data } = await axios.post(
-    `${BASE}/suggest`,
-    { chat_name: chatName, last_message: lastMessage },
-    { headers: { Authorization: `Bearer ${token}` } }
-  );
-  return data.options;
-}
-
-export async function healthcheck() {
-  const { data } = await axios.get(`${BASE}/`);
+// Auth
+export const signIn = async (credentials) => {
+  // POST /auth/signin { username, password }
+  const { data } = await api.post('/auth/signin', credentials);
   return data;
-}
->>>>>>> 358c0eda6cd20f98fadba49bef627a0df480147f
+};
+
+// Chats
+export const getOpenChats = async () => {
+  // GET /chats/open
+  const { data } = await api.get('/chats/open');
+  return data;
+};
+
+export const getChatMessages = async (chatId) => {
+  // GET /chats/:chatId/messages
+  const { data } = await api.get(`/chats/${chatId}/messages`);
+  return data;
+};
+
+export const sendReply = async (chatId, message) => {
+  // POST /chats/:chatId/reply { message }
+  const { data } = await api.post(`/chats/${chatId}/reply`, { message });
+  return data;
+};
+
+// Suggestions
+export const suggestReplies = async (text) => {
+  // POST /suggestions { text }
+  const { data } = await api.post('/suggestions', { text });
+  return data;
+};
+
+export default api;
