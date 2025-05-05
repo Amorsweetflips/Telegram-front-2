@@ -1,12 +1,46 @@
 // src/api.js
-const baseUrl = process.env.REACT_APP_API_URL.replace(/\/+$/, '');
+import axios from 'axios';
 
-export async function getData() {
-  const res = await fetch(`${baseUrl}/data`);
-  if (!res.ok) throw new Error(res.statusText);
-  const json = await res.json();
-  // unwrap the `data` key
-  return json.data;
+const BASE = process.env.REACT_APP_API_URL.replace(/\/+$/, '');
+
+export async function signIn(username) {
+  const { data } = await axios.post(`${BASE}/auth/token`, { username });
+  return data.token;
 }
 
-export default { getData };
+export async function getOpenChats(token) {
+  const { data } = await axios.get(`${BASE}/chats/open`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return data.chats;
+}
+
+export async function getChatMessages(chatName, token) {
+  const { data } = await axios.get(`${BASE}/chats/${chatName}/messages`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return data.messages;
+}
+
+export async function sendReply(chatName, message, token) {
+  const { data } = await axios.post(
+    `${BASE}/send`, 
+    { chat_name: chatName, message },
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  return data.inserted;
+}
+
+export async function suggestReplies(chatName, lastMessage, token) {
+  const { data } = await axios.post(
+    `${BASE}/suggest`,
+    { chat_name: chatName, last_message: lastMessage },
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  return data.options; // array of strings
+}
+
+export async function healthcheck() {
+  const { data } = await axios.get(`${BASE}/`);
+  return data;
+}
