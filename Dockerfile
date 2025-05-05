@@ -1,30 +1,27 @@
-# 1) Build stage
+# 1) Builder
 FROM node:20-alpine AS builder
 WORKDIR /app
 
-# Install git (for any git-based deps) and SSH client
-RUN apk add --no-cache git openssh-client
+# copy both package.json and package-lock.json so Docker sees axios
+COPY package.json package-lock.json craco.config.js .env.production ./
 
-# Copy manifests, CRACO config & production env
-COPY package.json craco.config.js .env.production ./
-RUN npm install
+# 1.2) Clean‐install from lockfile (this will pull in axios)
+RUN npm ci
 
-# Copy source and build
+# 1.3) Copy your app code
 COPY public ./public
 COPY src    ./src
+
+# 1.4) Build production bundle
 RUN npm run build
 
-# 2) Serve stage
+# 2) NGINX
 FROM nginx:stable-alpine
-
-# (Optional) custom nginx.conf to disable AIO and enable SPA fallback
+# (Optional) copy custom nginx.conf
 COPY nginx.conf /etc/nginx/nginx.conf
-
-# Copy static assets from builder
 COPY --from=builder /app/build /usr/share/nginx/html
 
-# Expose the HTTP port
 EXPOSE 80
-
-# Launch Nginx in the foreground
 CMD ["nginx", "-g", "daemon off;"]
+
+So this
