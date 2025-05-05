@@ -1,53 +1,97 @@
-// src/components/ChatInput.js
-import React, { useState } from 'react';
-import styled from 'styled-components';
-import { sendReply } from '../api';
-import { useAuth } from '../AuthContext';
+// File: src/App.js
 
-const Form = styled.form`
-  display: flex;
-  padding: 8px;
-  background: ${({ theme }) => theme.colors.surface};
-`;
+import React, { useState, useEffect } from 'react';
+import { ThemeProvider } from 'styled-components';
+import { GlobalStyle, theme } from './theme';
+import { AuthProvider, useAuth } from './AuthContext';
+import Sidebar from './components/Sidebar';
+import ChatWindow from './components/ChatWindow';
+import SuggestionCarousel from './components/SuggestionCarousel';
+import ChatInput from './components/ChatInput';
+import SignIn from './components/SignIn';
+import { getChatMessages } from './api';
+import { useWebSocket } from './hooks/useWebSocket';
 
-const Input = styled.input`
-  flex: 1;
-  padding: 8px;
-  background: ${({ theme }) => theme.colors.inputBg};
-  border: none;
-  border-radius: 4px;
-  color: ${({ theme }) => theme.colors.text};
-`;
+function Dashboard({ currentChat }) {
+  const { token, logout } = useAuth();
+  const [messages, setMessages] = useState([]);
+  const [lastMsg, setLastMsg] = useState('');
 
-const Button = styled.button`
-  margin-left: 8px;
-  background: ${({ theme }) => theme.colors.accent};
-  color: #fff;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-`;
+  // Load messages when chat changes
+  useEffect(() => {
+    if (!currentChat) return;
+    getChatMessages(currentChat, token).then((msgs) => {
+      setMessages(msgs);
+      setLastMsg(msgs[msgs.length - 1]?.message || '');
+    });
+  }, [currentChat, token]);
 
-export default function ChatInput({ chatName, onSent }) {
-  const { token } = useAuth();
-  const [text, setText] = useState('');
+  // Real-time updates via WebSocket
+  useWebSocket(
+    `${process.env.REACT_APP_API_URL.replace(/\/+$/, '')}/ws/${currentChat}`,
+    token,
+    (newMsg) => {
+      setMessages((prev) => [...prev, newMsg]);
+      setLastMsg(newMsg.message);
+    }
+  );
 
-  const submit = async (e) => {
-    e.preventDefault();
-    if (!text.trim()) return;
-    await sendReply(chatName, text, token);
-    onSent(text);
-    setText('');
-  };
+  if (!currentChat) {
+    return <div style={{ padding: '2rem' }}>Select a chat from the sidebar.</div>;
+  }
 
   return (
-    <Form onSubmit={submit}>
-      <Input 
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        placeholder="Type a message..."
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+      <header style={{ padding: '1rem', background: theme.colors.surface }}>
+        <button onClick={logout} style={{ float: 'right' }}>Sign Out</button>
+        <h2 style={{ margin: 0, color: theme.colors.text }}>{currentChat}</h2>
+      </header>
+
+      <ChatWindow messages={messages} />
+
+      <SuggestionCarousel
+        chatName={currentChat}
+        lastMessage={lastMsg}
+        onChoose={(opt) => {
+          setMessages((prev) => [
+            ...prev,
+            { id: Date.now(), sender_username: '<you>', message: opt },
+          ]);
+          setLastMsg(opt);
+        }}
       />
-      <Button type="submit">Send</Button>
-    </Form>
+
+      <ChatInput
+        chatName={currentChat}
+        onSent={(text) => setLastMsg(text)}
+      />
+    </div>
+  );
+}
+
+function AppInner() {
+  const { token, login } = useAuth();
+  const [currentChat, setCurrentChat] = useState(null);
+
+  if (!token) {
+    return <SignIn onLogin={login} />;
+  }
+
+  return (
+    <div style={{ display: 'flex', height: '100vh' }}>
+      <Sidebar selected={currentChat} onSelect={setCurrentChat} />
+      <Dashboard currentChat={currentChat} />
+    </div>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <ThemeProvider theme={theme}>
+        <GlobalStyle />
+        <AppInner />
+      </ThemeProvider>
+    </AuthProvider>
   );
 }
