@@ -1,24 +1,30 @@
-# 1) Build stage – name it “builder” here
+# 1) Build stage
 FROM node:20-alpine AS builder
 WORKDIR /app
+
+# Install git (for any git-based deps) and SSH client
 RUN apk add --no-cache git openssh-client
 
-# copy manifests + env + CRACO config
+# Copy manifests, CRACO config & production env
 COPY package.json craco.config.js .env.production ./
 RUN npm install
 
-# copy source & build
+# Copy source and build
 COPY public ./public
 COPY src    ./src
 RUN npm run build
 
-# 2) Serve stage – pull from your “builder” stage, not an external image
+# 2) Serve stage
 FROM nginx:stable-alpine
-# disable AIO to silence io_setup() errors
+
+# (Optional) custom nginx.conf to disable AIO and enable SPA fallback
 COPY nginx.conf /etc/nginx/nginx.conf
 
-# now copy the static files from the builder stage
+# Copy static assets from builder
 COPY --from=builder /app/build /usr/share/nginx/html
 
+# Expose the HTTP port
 EXPOSE 80
+
+# Launch Nginx in the foreground
 CMD ["nginx", "-g", "daemon off;"]
