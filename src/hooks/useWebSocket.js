@@ -1,18 +1,19 @@
-// src/hooks/useWebSocket.js
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 
 export function useWebSocket(url, token, onMessage) {
-  const ws = useRef(null);
-  const [ready, setReady] = useState(false);
+  const wsRef = useRef(null);
 
   useEffect(() => {
-    if (!token) return;
-    ws.current = new WebSocket(`${url}?token=${token}`);
-    ws.current.onopen = () => setReady(true);
-    ws.current.onmessage = (evt) => onMessage(JSON.parse(evt.data));
-    ws.current.onclose = () => setReady(false);
-    return () => ws.current.close();
+    // don’t even try to connect if no chat yet
+    if (!url || url.endsWith('/ws/null')) return;
+
+    const ws = new WebSocket(`${url}?token=${token}`);
+    ws.onmessage = e => onMessage(JSON.parse(e.data));
+    ws.onerror   = console.error;
+
+    wsRef.current = ws;
+    return () => ws.close();
   }, [url, token, onMessage]);
 
-  return ready;
+  return wsRef.current;
 }
