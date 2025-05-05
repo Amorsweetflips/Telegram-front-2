@@ -5,13 +5,14 @@ import { signIn } from './api';
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [token, setToken] = useState(localStorage.getItem('token') || null);
+  const [token, setToken] = useState(localStorage.getItem('token'));
 
   const login = async (username) => {
     const t = await signIn(username);
     localStorage.setItem('token', t);
     setToken(t);
   };
+
   const logout = () => {
     localStorage.removeItem('token');
     setToken(null);
