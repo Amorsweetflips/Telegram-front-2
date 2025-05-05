@@ -5,7 +5,7 @@ const BASE = process.env.REACT_APP_API_URL.replace(/\/+$/, '');
 
 export async function signIn(username) {
   const { data } = await axios.post(`${BASE}/auth/token`, { username });
-  return data.token;
+  return data.access_token;
 }
 
 export async function getOpenChats(token) {
@@ -24,7 +24,7 @@ export async function getChatMessages(chatName, token) {
 
 export async function sendReply(chatName, message, token) {
   const { data } = await axios.post(
-    `${BASE}/send`, 
+    `${BASE}/send`,
     { chat_name: chatName, message },
     { headers: { Authorization: `Bearer ${token}` } }
   );
@@ -37,7 +37,7 @@ export async function suggestReplies(chatName, lastMessage, token) {
     { chat_name: chatName, last_message: lastMessage },
     { headers: { Authorization: `Bearer ${token}` } }
   );
-  return data.options; // array of strings
+  return data.options;
 }
 
 export async function healthcheck() {
