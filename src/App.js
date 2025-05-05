@@ -1,42 +1,53 @@
-import React, { useEffect, useState } from 'react';
-import api from './api';
-import ChatWindow from './components/ChatWindow';
-import ChatMessage from './components/ChatMessage';
+// src/components/ChatInput.js
+import React, { useState } from 'react';
+import styled from 'styled-components';
+import { sendReply } from '../api';
+import { useAuth } from '../AuthContext';
 
-function App() {
-  const [messages, setMessages] = useState(null);
+const Form = styled.form`
+  display: flex;
+  padding: 8px;
+  background: ${({ theme }) => theme.colors.surface};
+`;
 
-  useEffect(() => {
-    api.getData()
-      .then(setMessages)
-      .catch(err => {
-        console.error(err);
-        setMessages([]);
-      });
-  }, []);
+const Input = styled.input`
+  flex: 1;
+  padding: 8px;
+  background: ${({ theme }) => theme.colors.inputBg};
+  border: none;
+  border-radius: 4px;
+  color: ${({ theme }) => theme.colors.text};
+`;
 
-  if (messages === null) {
-    return <div style={{ textAlign:'center', padding:'2rem' }}>Loading…</div>;
-  }
+const Button = styled.button`
+  margin-left: 8px;
+  background: ${({ theme }) => theme.colors.accent};
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+`;
+
+export default function ChatInput({ chatName, onSent }) {
+  const { token } = useAuth();
+  const [text, setText] = useState('');
+
+  const submit = async (e) => {
+    e.preventDefault();
+    if (!text.trim()) return;
+    await sendReply(chatName, text, token);
+    onSent(text);
+    setText('');
+  };
 
   return (
-    <ChatWindow>
-      {messages.length > 0 ? (
-        messages.map((msg, i) => (
-          <ChatMessage
-            key={msg.id || i}
-            author={msg.sender_username}
-            text={msg.message}
-            fromMe={msg.sender_username === '<your-username>'} // or however you detect “me”
-          />
-        ))
-      ) : (
-        <div style={{ textAlign:'center', marginTop:'2rem' }}>
-          No messages yet.
-        </div>
-      )}
-    </ChatWindow>
+    <Form onSubmit={submit}>
+      <Input 
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        placeholder="Type a message..."
+      />
+      <Button type="submit">Send</Button>
+    </Form>
   );
 }
-
-export default App;
