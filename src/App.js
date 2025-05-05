@@ -26,15 +26,16 @@ function Dashboard({ currentChat }) {
     });
   }, [currentChat, token]);
 
-  // Real-time updates via WebSocket
-  useWebSocket(
-    `${process.env.REACT_APP_API_URL.replace(/\/+$/, '')}/ws/${currentChat}`,
-    token,
-    (newMsg) => {
-      setMessages((prev) => [...prev, newMsg]);
-      setLastMsg(newMsg.message);
-    }
-  );
+  // Build the WS URL only when we have a valid chat
+  const wsUrl = currentChat
+    ? `${process.env.REACT_APP_API_URL.replace(/\/+$/, '')}/ws/${currentChat}`
+    : null;
+
+  // Real-time updates via WebSocket (Option A guard)
+  useWebSocket(wsUrl, token, (newMsg) => {
+    setMessages((prev) => [...prev, newMsg]);
+    setLastMsg(newMsg.message);
+  });
 
   if (!currentChat) {
     return <div style={{ padding: '2rem' }}>Select a chat from the sidebar.</div>;
