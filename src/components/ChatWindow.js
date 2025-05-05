@@ -1,19 +1,23 @@
-import React from 'react';
+// src/components/ChatWindow.js
+import React, { useEffect, useRef } from 'react';
 import styled from 'styled-components';
 
 const Window = styled.div`
-  max-width: 600px;
-  height: 80vh;
-  margin: 0 auto;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-  background: #e5ddd5;
+  flex: 1;
   padding: 16px;
+  background: ${({ theme }) => theme.colors.background};
+  overflow-y: auto;
 `;
 
-export default function ChatWindow({ children }) {
-  return <Window>{children}</Window>;
+export default function ChatWindow({ messages }) {
+  const endRef = useRef();
+  useEffect(() => endRef.current?.scrollIntoView({ behavior: 'smooth' }), [messages]);
+  return (
+    <Window>
+      {messages.map((m) => (
+        <div key={m.id}>{m.sender_username}: {m.message}</div>
+      ))}
+      <div ref={endRef} />
+    </Window>
+  );
 }
