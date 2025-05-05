@@ -1,26 +1,12 @@
 {
-<<<<<<< HEAD
-  "name": "telegram-front-2",
+  "name": "sweetflips-frontend",
   "version": "1.0.0",
   "private": true,
   "dependencies": {
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
-    "react-scripts": "5.0.0",
-    "axios": "^1.0.0",
-    "react-router-dom": "^6.0.0"
-  },
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build"
-=======
-  "name": "sweetflips-frontend",
-  "version": "1.0.0",
-  "private": true,
-  "dependencies": {
     "axios": "^1.9.0",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
+    "react-router-dom": "^6.0.0",
     "styled-components": "^6.1.17",
     "telegram-tt": "git+https://github.com/Ajaxy/telegram-tt.git#master"
   },
@@ -45,6 +31,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
->>>>>>> 358c0eda6cd20f98fadba49bef627a0df480147f
   }
 }
